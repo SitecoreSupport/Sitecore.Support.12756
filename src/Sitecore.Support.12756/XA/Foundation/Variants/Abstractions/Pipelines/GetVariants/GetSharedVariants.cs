@@ -5,6 +5,7 @@
   using Sitecore.XA.Foundation.Presentation;
   using Sitecore.XA.Foundation.SitecoreExtensions.Extensions;
   using Sitecore.XA.Foundation.Variants.Abstractions.Pipelines.GetVariants;
+  using System.Collections.Generic;
   using System.Linq;
 
   public class GetSharedVariants
@@ -34,6 +35,29 @@
             {
               args.Variants.AddRange(item3.Children);
             }
+
+            #region Added code
+            item3 = presentationItem.FirstChildInheritingFrom(Sitecore.XA.Foundation.Variants.Abstractions.Templates.VariantsGrouping.ID);
+            List<Item> list = new List<Item>();
+            if (item3 != null)
+            {
+              foreach (Item child in item3.Children)
+              {
+                if (((BaseItem)child)[Sitecore.XA.Foundation.Variants.Abstractions.Templates.ICompatibleRenderings.Fields.CompatibleRenderings].Contains(args.RenderingId.ToString()))
+                {
+                  list.AddRange(child.Children);
+                }
+                else
+                {
+                  list.AddRange(from variantRoot in child.Children
+                                where ((BaseItem)variantRoot)[Sitecore.XA.Foundation.Variants.Abstractions.Templates.ICompatibleRenderings.Fields.CompatibleRenderings].Contains(args.RenderingId.ToString())
+                                select variantRoot);
+                }
+              }
+              args.Variants.AddRange(list);
+            }
+            #endregion
+
           }
         }
       }
